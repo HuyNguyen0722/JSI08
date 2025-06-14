@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CRUD - Firebase</title>
+    <style>
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 10px;
+      }
+      th,
+      td {
+        border: 1px solid #ddd;
+        padding: 8px;
+      }
+      input,
+      button {
+        margin: 5px;
+      }
+      th {
+        background-color: #f4f4f4;
+      }
+    </style>
+  </head>
+  <body>
+    <h2>Quản lý người dùng</h2>
+    <input type="text" id="nameInput" placeholder="Tên" />
+    <input type="text" id="ageInput" placeholder="Tuổi" />
+    <button onclick="">Thêm</button>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Tên</th>
+          <th>Tuổi</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody id="userTableBody"></tbody>
+    </table>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+      import {
+        getFirestore,
+        collection,
+        doc,
+        addDoc,
+        getDocs,
+        updateDoc,
+        deleteDoc,
+      } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBhN5-0ygi_wTv4E_1h3lJIcjhWM9HvRmE",
+        authDomain: "project-users-ab1d2.firebaseapp.com",
+        projectId: "project-users-ab1d2",
+        storageBucket: "project-users-ab1d2.firebasestorage.app",
+        messagingSenderId: "564685800956",
+        appId: "1:564685800956:web:dab24e7612a0c8564fde79",
+        measurementId: "G-JVF1NTJJ86",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+
+      const db = getFirestore(app);
+
+      //Thêm người dùng
+      window.addUser = async () => {
+        const name = document.getElementById("nameInput").value.trim();
+        const age = parseInt(document.getElementById("ageInput").value);
+
+        if (name && !isNaN(age)) {
+          await addDoc(collection(db, "users"), { name, age });
+          document.getElementById("nameInput").value = "";
+          document.getAnimations("ageInput").value = "";
+        } else {
+          alert("Vui lòng nhập tên và tuổi");
+        }
+      };
+
+      //hiển thị người dùng
+      async function loadUsers() {
+        const querySnapshot = await getDocs(collection(db, "users"));
+        const tbody = document.getElementById("userTableBody");
+        tbody.innerHTML = "";
+        querySnapshot.forEach((docSnap) => {
+          const data = docSnap.data();
+          tbody.innerHTML += `
+            <tr>
+              <td>${data.name}</td>
+              <td>${data.age}</td>
+              <td>
+                <button onclick="updateUser('${docSnap.id}')">Cập nhật</button>
+                <button onclick="deleteUser('${docSnap.id}')">Xoá</button>
+              </td>
+            </tr>
+          `;
+        });
+      }
+
+      // Cập nhật người dùng theo ID
+      window.updateUser = async (id) => {
+        const name = prompt("Tên mới:");
+        const age = prompt("Tuổi mới:");
+        if (name && !isNaN(parseInt(age))) {
+          await updateDoc(doc(db, "users", id), {
+            name,
+            age: parseInt(age),
+          });
+          loadUsers();
+        } else {
+          alert("Thông tin không hợp lệ.");
+        }
+      };
+
+      // Xoá người dùng theo ID
+      window.deleteUser = async (id) => {
+        if (confirm("Bạn có chắc chắn muốn xoá người dùng này không?")) {
+          await deleteDoc(doc(db, "users", id));
+          loadUsers();
+        }
+      };
+
+      // Gọi lần đầu
+      loadUsers();
+    </script>
+  </body>
+</html>
