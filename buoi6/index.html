@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CRUD - Firebase</title>
+    <title>Quản lý người dùng với Firebase</title>
     <style>
       table {
         width: 100%;
@@ -27,15 +27,15 @@
   <body>
     <h2>Quản lý người dùng</h2>
     <input type="text" id="nameInput" placeholder="Tên" />
-    <input type="text" id="ageInput" placeholder="Tuổi" />
-    <button onclick="">Thêm</button>
+    <input type="number" id="ageInput" placeholder="Tuổi" />
+    <button onclick="addUser()">Thêm</button>
 
     <table>
       <thead>
         <tr>
           <th>Tên</th>
           <th>Tuổi</th>
-          <th>Action</th>
+          <th>Hành động</th>
         </tr>
       </thead>
       <tbody id="userTableBody"></tbody>
@@ -43,7 +43,6 @@
 
     <script type="module">
       import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
-      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
       import {
         getFirestore,
         collection,
@@ -55,35 +54,33 @@
       } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore.js";
 
       const firebaseConfig = {
-        apiKey: "AIzaSyBhN5-0ygi_wTv4E_1h3lJIcjhWM9HvRmE",
-        authDomain: "project-users-ab1d2.firebaseapp.com",
-        projectId: "project-users-ab1d2",
-        storageBucket: "project-users-ab1d2.firebasestorage.app",
-        messagingSenderId: "564685800956",
-        appId: "1:564685800956:web:dab24e7612a0c8564fde79",
-        measurementId: "G-JVF1NTJJ86",
+        apiKey: "AIzaSyBLMXhAtEYP7PbBzcY48a7dTuQcYkrw8TA",
+        authDomain: "test-9b628.firebaseapp.com",
+        projectId: "test-9b628",
+        storageBucket: "test-9b628.appspot.com",
+        messagingSenderId: "592670319213",
+        appId: "1:592670319213:web:e134793700423a3debd564",
+        measurementId: "G-GCJFWEV4BG",
       };
 
       const app = initializeApp(firebaseConfig);
-      const analytics = getAnalytics(app);
-
       const db = getFirestore(app);
 
-      //Thêm người dùng
+      // Thêm người dùng mới (Firebase sẽ tự tạo ID)
       window.addUser = async () => {
         const name = document.getElementById("nameInput").value.trim();
         const age = parseInt(document.getElementById("ageInput").value);
-
         if (name && !isNaN(age)) {
           await addDoc(collection(db, "users"), { name, age });
           document.getElementById("nameInput").value = "";
-          document.getAnimations("ageInput").value = "";
+          document.getElementById("ageInput").value = "";
+          loadUsers();
         } else {
-          alert("Vui lòng nhập tên và tuổi");
+          alert("Vui lòng nhập tên và tuổi hợp lệ.");
         }
       };
 
-      //hiển thị người dùng
+      // Hiển thị danh sách người dùng
       async function loadUsers() {
         const querySnapshot = await getDocs(collection(db, "users"));
         const tbody = document.getElementById("userTableBody");
