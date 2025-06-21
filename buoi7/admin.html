@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Admin Panel CRUD</title>
+    <link rel="stylesheet" href="admin.css" />
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.9.1/firebase-firestore-compat.js"></script>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Quản lý sản phẩm</h1>
+      <form id="productForm">
+        <input type="text" id="productId" placeholder="ID (vd: 1)" required />
+        <input type="text" id="name" placeholder="Tên sản phẩm" required />
+        <input type="text" id="descriptions" placeholder="Mô tả" required />
+        <input type="text" id="image" placeholder="URL ảnh (nếu có)" />
+        <button type="submit">Thêm / Cập nhật</button>
+      </form>
+
+      <hr />
+      <h2>Danh sách sản phẩm</h2>
+      <ul id="productList"></ul>
+    </div>
+
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-app.js";
+      import { getAnalytics } from "https://www.gstatic.com/firebasejs/11.9.1/firebase-analytics.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBLMXhAtEYP7PbBzcY48a7dTuQcYkrw8TA",
+        authDomain: "test-9b628.firebaseapp.com",
+        projectId: "test-9b628",
+        storageBucket: "test-9b628.firebasestorage.app",
+        messagingSenderId: "592670319213",
+        appId: "1:592670319213:web:e134793700423a3debd564",
+        measurementId: "G-GCJFWEV4BG",
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const analytics = getAnalytics(app);
+
+      firebase.initializeApp(firebaseConfig);
+      const db = firebase.firestore();
+
+      const form = document.getElementById("productForm");
+      const list = document.getElementById("productList");
+
+      // Tạo documentId từ name (vd: "Coffe")
+      function docIdFromName(name) {
+        return name.replace(/\s+/g, "");
+      }
+
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        const id = document.getElementById("productId").value;
+        const name = document.getElementById("name").value;
+        const descriptions = document.getElementById("descriptions").value;
+        const image = document.getElementById("image").value;
+
+        const docId = docIdFromName(name); // tên document
+
+        await db
+          .collection("products")
+          .doc(docId)
+          .set({
+            ID: Number(id),
+            name,
+            descriptions,
+            image,
+          });
+
+        alert("Đã lưu sản phẩm!");
+        form.reset();
+        loadProducts();
+      });
+
+      async function loadProducts() {
+        const snapshot = await db.collection("products").get();
+        list.innerHTML = "";
+
+        snapshot.forEach((doc) => {
+          const data = doc.data();
+          const li = document.createElement("li");
+          li.innerHTML = `
+          <strong>${data.name}</strong> - ${data.descriptions}
+          <button onclick="deleteProduct('${doc.id}')">Xoá</button>
+        `;
+          list.appendChild(li);
+        });
+      }
+
+      window.deleteProduct = async function (id) {
+        await db.collection("products").doc(id).delete();
+        alert("Đã xoá sản phẩm");
+        loadProducts();
+      };
+
+      loadProducts();
+    </script>
+  </body>
+</html>
